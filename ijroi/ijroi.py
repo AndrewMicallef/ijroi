@@ -72,7 +72,7 @@ def read_roi(fileobj):
     # Discard second Byte:
     get8()
 
-    if roi_type not in [RoiType.FREEHAND, RoiType.POLYGON, RoiType.RECT, RoiType.POINT]:
+    if roi_type not in [RoiType.FREEHAND, RoiType.TRACED, RoiType.POLYGON, RoiType.RECT, RoiType.POINT]:
         raise NotImplementedError('roireader: ROI type %s not supported' % roi_type)
 
     top = get16()
