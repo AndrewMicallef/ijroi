@@ -113,7 +113,7 @@ def read_roi(fileobj):
     
     #Composite ROI
     if shape_roi_size > 0:
-        coords_bytes = file_obj.read()
+        coords_bytes = fileobj.read()
         buffer = np.frombuffer(coords_bytes, dtype='>f4', count=shape_roi_size)
         
         segments = []
