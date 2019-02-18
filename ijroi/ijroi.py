@@ -66,8 +66,6 @@ def read_roi(fileobj):
     #Read Header data
     
     magic = fileobj.read(4)
-    if magic != b'Iout':
-        raise ValueError('Magic number not found')
     version = get16()
 
     # It seems that the roi type field occupies 2 Bytes, but only one is used
@@ -105,12 +103,14 @@ def read_roi(fileobj):
     
     # Check exceptions
 
+    if magic != b'Iout':
+        raise ValueError('Magic number not found')
+    
     if roi_type not in [RoiType.FREEHAND, RoiType.TRACED, RoiType.POLYGON, RoiType.RECT, RoiType.POINT]:
         raise NotImplementedError('roireader: ROI type %s not supported' % roi_type)
         
     if subtype != 0:
         raise NotImplementedError('roireader: ROI subtype %s not supported (!= 0)' % subtype)
-    
     
     if roi_type == RoiType.RECT:
         if subPixelResolution:
@@ -133,7 +133,7 @@ def read_roi(fileobj):
     points[:, 1] = [getc() for i in range(n_coordinates)]
     points[:, 0] = [getc() for i in range(n_coordinates)]
 
-    if subPixelResolution == 0:
+    if not subPixelResolution:
         points[:, 1] += left
         points[:, 0] += top
 
