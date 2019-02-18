@@ -104,14 +104,47 @@ def read_roi(fileobj):
     subPixelResolution = ((options&SUB_PIXEL_RESOLUTION)!=0) and (version>=222)
     
     # Check exceptions
-
+    
     if roi_type not in [RoiType.FREEHAND, RoiType.TRACED, RoiType.POLYGON, RoiType.RECT, RoiType.POINT]:
         raise NotImplementedError('roireader: ROI type %s not supported' % roi_type)
         
     if subtype != 0:
         raise NotImplementedError('roireader: ROI subtype %s not supported (!= 0)' % subtype)
     
-    
+    #Composite ROI
+    if shape_roi_size > 0:
+        coords_bytes = file_obj.read()
+        buffer = np.frombuffer(coords_bytes, dtype='>f4', count=shape_roi_size)
+        
+        segments = []
+        
+        # the number of units to read depens on the type of segement...
+        # this only works with basic line segemnts (ie type 1, type 2 is quadratic
+        # and type 3 is cubic
+        
+        rc = {4:1, 0:3, 1:3, 2:5, 3:7}
+
+        # scrolls through the buffer one line segment at a time,
+        # line segments are stored as x,y tuples, I reverse the
+        # segment, in order to remain consitant with the other return types
+        i = 0
+        these_points = []
+        while i < buffer.size:
+            _type = buffer[i]
+            read_len = rc[_type]
+            seg = buffer[i+1:i+read_len]
+            if seg.size == 0:
+                segments.append(np.r_[these_points])
+                these_points = []
+                
+            else:
+                these_points.append(seg[::-1])
+            
+            i = i+read_len
+        
+        return segments
+        
+        
     if roi_type == RoiType.RECT:
         if subPixelResolution:
             return np.array(
