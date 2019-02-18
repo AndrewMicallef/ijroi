@@ -66,6 +66,9 @@ def read_roi(fileobj):
     #Read Header data
     
     magic = fileobj.read(4)
+    if magic != b'Iout':
+        raise ValueError('Magic number not found')
+        
     version = get16()
 
     # It seems that the roi type field occupies 2 Bytes, but only one is used
@@ -98,14 +101,10 @@ def read_roi(fileobj):
     # End Header data
     #===========================================================================
 
-    #RoiDecoder.java#L177
+    #RoiDecoder.java checks the version when setting sub-pixel resolution, therefore so do we
     subPixelResolution = ((options&SUB_PIXEL_RESOLUTION)!=0) and (version>=222)
     
     # Check exceptions
-
-    if magic != b'Iout':
-        raise ValueError('Magic number not found')
-    
     if roi_type not in [RoiType.FREEHAND, RoiType.TRACED, RoiType.POLYGON, RoiType.RECT, RoiType.POINT]:
         raise NotImplementedError('roireader: ROI type %s not supported' % roi_type)
         
